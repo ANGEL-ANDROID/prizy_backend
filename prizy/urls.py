@@ -14,19 +14,26 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework_jwt.views import ObtainJSONWebToken, refresh_jwt_token, verify_jwt_token
 
-from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
+from prizy.serializers import PrizyJWTSerializer
 
 urlpatterns = [
     # Admin panel
     path('admin/', admin.site.urls),
     # JWT authentication
-    path('auth/', obtain_jwt_token, name='jwt_auth'),
+    path('auth/', ObtainJSONWebToken.as_view(serializer_class=PrizyJWTSerializer), name='jwt_auth'),
     path('refresh/', refresh_jwt_token, name='jwt_refresh'),
     path('verify/', verify_jwt_token, name='jwt_verify'),
     # API routes
     path('api/', include('accounts.urls')),
-    path('api/', include('events.urls'))
+    path('api/', include('events.urls')),
 ]
+
+# Defining where the images are placed, for DEBUG mode only!!!
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
